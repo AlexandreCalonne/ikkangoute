@@ -60,7 +60,7 @@ public class MessageUtils {
             .collect(Collectors.groupingBy(Message::getAuthor, Collectors.counting()))
             .entrySet()
             .stream()
-            .sorted(Map.Entry.comparingByValue())
+            .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
             .forEach(System.out::println);
     }
 
