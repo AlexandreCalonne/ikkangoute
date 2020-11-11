@@ -1,6 +1,7 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
@@ -12,6 +13,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MessageUtils {
+
+    public static final String DATE_REGEX = "^\\d{1,2}/\\d{1,2}/\\d{1,2}, \\d{2}:\\d{2}";
+    public static final String AUTHOR_REGEX = "([^:]+)";
 
     private static List<Message> messages = new ArrayList<>();
 
@@ -29,14 +33,14 @@ public class MessageUtils {
     }
 
     private static String retrieveAuthor(String messageString) {
-        Pattern authorPattern = Pattern.compile("\\d{1,2}/\\d{1,2}/\\d{1,2}, \\d{2}:\\d{2} - ([^:]+): ");
+        Pattern authorPattern = Pattern.compile(DATE_REGEX + " - " + AUTHOR_REGEX + ": ");
         Matcher authorMatcher = authorPattern.matcher(messageString);
 
         return authorMatcher.find() ? authorMatcher.group(1) : "unknown";
     }
 
     private static LocalDateTime retrieveSentDate(String messageString) {
-        Pattern sentDatePattern = Pattern.compile("\\d{1,2}/\\d{1,2}/\\d{1,2}, \\d{2}:\\d{2}");
+        Pattern sentDatePattern = Pattern.compile(DATE_REGEX);
         Matcher sentDateMatcher = sentDatePattern.matcher(messageString);
 
         DateTimeFormatter sentDateFormatter = DateTimeFormatter.ofPattern("M/d/yy, HH:mm");
@@ -47,7 +51,7 @@ public class MessageUtils {
     }
 
     private static String retrieveBody(String messageString) {
-        String body = messageString.replaceFirst("\\d{1,2}/\\d{1,2}/\\d{1,2}, \\d{2}:\\d{2} - (\\S*: )?", "");
+        String body = messageString.replaceFirst(DATE_REGEX + " - " + AUTHOR_REGEX + ": ", "");
         if (body.endsWith("\n")) {
             body = body.substring(0, body.length() - 1);
         }
@@ -55,13 +59,15 @@ public class MessageUtils {
         return body;
     }
 
-    public static void displayNumberOfMessagesByAuthor() {
-        messages.stream()
-            .collect(Collectors.groupingBy(Message::getAuthor, Collectors.counting()))
-            .entrySet()
-            .stream()
-            .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-            .forEach(System.out::println);
+    public static Map<String, Long> numberOfMessagesByAuthor() {
+        return messages.stream()
+            .collect(Collectors.groupingBy(Message::getAuthor, Collectors.counting()));
+    }
+
+    public static Map<String, Double> averageMessageLengthByAuthor() {
+        return messages.stream()
+            .map(message -> Map.entry(message.getAuthor(), message.getBody().length()))
+            .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.averagingInt(Map.Entry::getValue)));
     }
 
     public static void writeMessagesToJSONFile() throws IOException {

@@ -7,14 +7,15 @@ public class Main {
 
     public static void main(String[] args) throws IOException, URISyntaxException {
         Scanner scanner = new Scanner(new File(ClassLoader.getSystemResource("chat.txt").toURI()));
-        scanner.useDelimiter("(?m)(?=^\\d{1,2}/\\d{1,2}/\\d{1,2}, \\d{2}:\\d{2} - (\\S*: )?.+)");
+        scanner.useDelimiter("(?m)(?=^" + MessageUtils.DATE_REGEX + " - " + MessageUtils.AUTHOR_REGEX + ": .+$)");
 
         while (scanner.hasNext()) {
             MessageUtils.parse(scanner.next())
                 .ifPresent(MessageUtils::addMessage);
         }
 
-        MessageUtils.displayNumberOfMessagesByAuthor();
+        System.out.println(MessageUtils.numberOfMessagesByAuthor());
+        System.out.println(MessageUtils.averageMessageLengthByAuthor());
         MessageUtils.writeMessagesToJSONFile();
     }
 }
