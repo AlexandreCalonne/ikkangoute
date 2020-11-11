@@ -70,6 +70,14 @@ public class MessageUtils {
             .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.averagingInt(Map.Entry::getValue)));
     }
 
+    public static Map<String, Double> averageNumberOfMessagesByDay() {
+        return messages.stream()
+            .collect(Collectors.groupingBy(message -> message.getSentDate().toLocalDate(), Collectors.counting()))
+            .entrySet()
+            .stream()
+            .collect(Collectors.groupingBy(day -> day.getKey().getDayOfWeek().name(), Collectors.averagingLong(Map.Entry::getValue)));
+    }
+
     public static void writeMessagesToJSONFile() throws IOException {
         ObjectWriter writer = new ObjectMapper().writer().withDefaultPrettyPrinter();
         File file = new File("target/chat.json");
