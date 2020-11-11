@@ -52,7 +52,7 @@ public class MessageUtils {
             body = body.substring(0, body.length() - 1);
         }
 
-        return body.replace("\n", "");
+        return body;
     }
 
     public static void displayNumberOfMessagesByAuthor() {
