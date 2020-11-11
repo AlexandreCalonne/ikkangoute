@@ -17,6 +17,7 @@ public class Main {
         System.out.println(MessageUtils.numberOfMessagesByAuthor());
         System.out.println(MessageUtils.averageMessageLengthByAuthor());
         System.out.println(MessageUtils.averageNumberOfMessagesByDay());
+        System.out.println(MessageUtils.dayWithMostMessages());
         MessageUtils.writeMessagesToJSONFile();
     }
 }

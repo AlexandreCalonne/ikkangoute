@@ -5,9 +5,11 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -47,7 +49,7 @@ public class MessageUtils {
 
         return sentDateMatcher.find()
             ? LocalDateTime.parse(sentDateMatcher.group(), sentDateFormatter)
-            : LocalDateTime.ofInstant(Instant.ofEpochSecond(0), TimeZone.getDefault().toZoneId());
+            : LocalDateTime.MIN;
     }
 
     private static String retrieveBody(String messageString) {
@@ -67,7 +69,7 @@ public class MessageUtils {
     public static Map<String, Double> averageMessageLengthByAuthor() {
         return messages.stream()
             .map(message -> Map.entry(message.getAuthor(), message.getBody().length()))
-            .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.averagingInt(Map.Entry::getValue)));
+            .collect(Collectors.groupingBy(Entry::getKey, Collectors.averagingInt(Entry::getValue)));
     }
 
     public static Map<String, Double> averageNumberOfMessagesByDay() {
@@ -75,7 +77,16 @@ public class MessageUtils {
             .collect(Collectors.groupingBy(message -> message.getSentDate().toLocalDate(), Collectors.counting()))
             .entrySet()
             .stream()
-            .collect(Collectors.groupingBy(day -> day.getKey().getDayOfWeek().name(), Collectors.averagingLong(Map.Entry::getValue)));
+            .collect(Collectors.groupingBy(day -> day.getKey().getDayOfWeek().name(), Collectors.averagingLong(Entry::getValue)));
+    }
+
+    public static Entry<LocalDate, Long> dayWithMostMessages() {
+        return messages.stream()
+            .collect(Collectors.groupingBy(message -> message.getSentDate().toLocalDate(), Collectors.counting()))
+            .entrySet()
+            .stream()
+            .max(Entry.comparingByValue())
+            .orElse(Map.entry(LocalDate.MIN, 0L));
     }
 
     public static void writeMessagesToJSONFile() throws IOException {
